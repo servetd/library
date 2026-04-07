@@ -13,8 +13,8 @@ $extraCss = ['/assets/css/reader.css'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?> - <?= SITE_TITLE ?></title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="stylesheet" href="/assets/css/reader.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/web/pdf_viewer.css">
+    <link rel="stylesheet" href="/assets/css/reader.css">
 </head>
 <body>
     <nav class="navbar">

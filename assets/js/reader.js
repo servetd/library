@@ -8,6 +8,7 @@ let currentPage = 1;
 let totalPages = 0;
 let scale = 1.5;
 let rendering = false;
+let currentTextLayer = null;
 
 const canvas = document.getElementById('pdf-canvas');
 const ctx = canvas.getContext('2d');
@@ -88,18 +89,21 @@ async function renderPage(num) {
 
         await page.render({ canvasContext: ctx2, viewport }).promise;
 
-        // Text layer using PDF.js official TextLayer API
+        // Cancel previous text layer before rendering new one
+        if (currentTextLayer) {
+            currentTextLayer.cancel();
+            currentTextLayer = null;
+        }
         tl.innerHTML = '';
-        tl.style.width = viewport.width + 'px';
-        tl.style.height = viewport.height + 'px';
 
+        // Render text layer using PDF.js official TextLayer API
         const textContent = await page.getTextContent();
-        const textLayerObj = new pdfjsLib.TextLayer({
+        currentTextLayer = new pdfjsLib.TextLayer({
             textContentSource: textContent,
             container: tl,
             viewport: viewport,
         });
-        await textLayerObj.render();
+        await currentTextLayer.render();
 
         currentPage = num;
         pageInput.value = num;
