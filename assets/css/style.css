@@ -387,6 +387,41 @@ th {
     transform: rotateY(180deg);
 }
 
+/* === Notes / Quotes === */
+.note-card { border-left: 3px solid var(--primary); }
+.note-text {
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 0.75rem;
+    border: none;
+    padding: 0;
+}
+.note-citation {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+.note-citation a { color: var(--primary); }
+.note-date { font-size: 0.75rem; }
+.note-comment {
+    font-size: 0.85rem;
+    background: var(--bg);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+}
+.note-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+
 /* === Footer === */
 .footer {
     text-align: center;

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'pdfkutuphanem-v1';
+const CACHE_VERSION = 'pdfkutuphanem-v2';
 const STATIC_CACHE = CACHE_VERSION + '-static';
 const DYNAMIC_CACHE = CACHE_VERSION + '-dynamic';
 
@@ -16,6 +16,8 @@ const STATIC_ASSETS = [
     '/assets/js/dictionary.js',
     '/assets/js/notebook.js',
     '/assets/js/manage.js',
+    '/assets/js/notes.js',
+    '/notes.php',
     '/manifest.json',
     '/icon.php?size=192',
 ];

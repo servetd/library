@@ -211,23 +211,87 @@ document.getElementById('close-sidebar').addEventListener('click', () => {
     }
 });
 
-// === Text Selection → Dictionary ===
+// === Text Selection → Dictionary + Quote Save ===
 document.addEventListener('mouseup', () => {
     const selection = window.getSelection();
     const text = selection.toString().trim();
-    if (text && text.length > 0 && text.length < 100) {
-        // Check if selection is within the text layer
-        const anchor = selection.anchorNode;
-        if (anchor && document.getElementById('text-layer')?.contains(anchor)) {
-            window.dispatchEvent(new CustomEvent('word-selected', { detail: { word: text } }));
-            // Open sidebar on mobile
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('collapsed');
-                sidebar.classList.add('open');
-            }
+    if (!text || text.length === 0) {
+        hideQuotePopup();
+        return;
+    }
+    // Check if selection is within the text layer
+    const anchor = selection.anchorNode;
+    if (!anchor || !document.getElementById('text-layer')?.contains(anchor)) return;
+
+    if (text.length < 100) {
+        // Short text → dictionary lookup
+        window.dispatchEvent(new CustomEvent('word-selected', { detail: { word: text } }));
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('collapsed');
+            sidebar.classList.add('open');
         }
     }
+
+    // Any selection → show quote save popup (for sentences/paragraphs)
+    if (text.length > 10) {
+        showQuotePopup(text, selection);
+    }
 });
+
+// === Quote Save Popup ===
+let quotePopup = null;
+
+function showQuotePopup(text, selection) {
+    hideQuotePopup();
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    quotePopup = document.createElement('div');
+    quotePopup.className = 'quote-popup';
+    quotePopup.innerHTML = `<button class="btn btn-sm btn-primary" id="save-quote-btn">&#128221; Alintiyi Kaydet</button>`;
+    quotePopup.style.position = 'fixed';
+    quotePopup.style.left = (rect.left + rect.width / 2) + 'px';
+    quotePopup.style.top = (rect.top - 40) + 'px';
+    quotePopup.style.transform = 'translateX(-50%)';
+    quotePopup.style.zIndex = '60';
+    document.body.appendChild(quotePopup);
+
+    document.getElementById('save-quote-btn').addEventListener('click', async () => {
+        const fileKey = config.category + '/' + config.file;
+        const fileName = config.file;
+        try {
+            const res = await fetch('/api/notes.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: text.substring(0, 2000),
+                    source_pdf: fileKey,
+                    source_page: currentPage,
+                    source_name: fileName,
+                }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                quotePopup.innerHTML = '<span class="btn btn-sm btn-success">Kaydedildi!</span>';
+                setTimeout(hideQuotePopup, 1500);
+            } else {
+                alert(data.error || 'Kaydedilemedi');
+                hideQuotePopup();
+            }
+        } catch {
+            alert('Baglanti hatasi');
+            hideQuotePopup();
+        }
+    });
+}
+
+function hideQuotePopup() {
+    if (quotePopup) {
+        quotePopup.remove();
+        quotePopup = null;
+    }
+}
 
 // Export for dictionary.js
 window.readerGetCurrentPage = () => currentPage;

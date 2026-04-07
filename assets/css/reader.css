@@ -104,6 +104,16 @@
     background: rgba(0, 0, 255, 0.3);
 }
 
+/* === Quote Save Popup === */
+.quote-popup {
+    animation: fadeIn 0.15s ease;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 /* === Dictionary Sidebar === */
 .dict-sidebar {
     width: 320px;

@@ -30,6 +30,7 @@ $extraCss = ['/assets/css/reader.css'];
             <div class="nav-links">
                 <a href="/" class="nav-link">Kutuphane</a>
                 <a href="/notebook.php" class="nav-link">Kelime Defteri</a>
+                <a href="/notes.php" class="nav-link">Alinti Defteri</a>
                 <button id="theme-toggle" class="btn-icon" title="Tema Degistir">&#9790;</button>
             </div>
             <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">&#9776;</button>

@@ -27,6 +27,7 @@
             <div class="nav-links">
                 <a href="/" class="nav-link <?= ($currentPage ?? '') === 'home' ? 'active' : '' ?>">Kutuphane</a>
                 <a href="/notebook.php" class="nav-link <?= ($currentPage ?? '') === 'notebook' ? 'active' : '' ?>">Kelime Defteri</a>
+                <a href="/notes.php" class="nav-link <?= ($currentPage ?? '') === 'notes' ? 'active' : '' ?>">Alinti Defteri</a>
                 <a href="/manage.php" class="nav-link <?= ($currentPage ?? '') === 'manage' ? 'active' : '' ?>">Yonetim</a>
                 <button id="theme-toggle" class="btn-icon" title="Tema Degistir">&#9790;</button>
             </div>
