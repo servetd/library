@@ -94,21 +94,11 @@
     display: block;
 }
 
-/* Text layer for selection */
+/* Text layer overrides (base styles come from pdf_viewer.css CDN) */
 .textLayer {
     position: absolute;
     inset: 0;
     overflow: hidden;
-    opacity: 0.25;
-    line-height: 1.0;
-}
-
-.textLayer span {
-    color: transparent;
-    position: absolute;
-    white-space: pre;
-    transform-origin: 0% 0%;
-    cursor: text;
 }
 
 .textLayer ::selection {

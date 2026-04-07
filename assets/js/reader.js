@@ -88,24 +88,18 @@ async function renderPage(num) {
 
         await page.render({ canvasContext: ctx2, viewport }).promise;
 
-        // Text layer
+        // Text layer using PDF.js official TextLayer API
         tl.innerHTML = '';
         tl.style.width = viewport.width + 'px';
         tl.style.height = viewport.height + 'px';
 
         const textContent = await page.getTextContent();
-        const textItems = textContent.items;
-
-        textItems.forEach(item => {
-            const span = document.createElement('span');
-            const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
-            span.textContent = item.str;
-            span.style.left = tx[4] + 'px';
-            span.style.top = (tx[5] - item.height) + 'px';
-            span.style.fontSize = Math.abs(tx[3]) + 'px';
-            span.style.fontFamily = item.fontName || 'sans-serif';
-            tl.appendChild(span);
+        const textLayerObj = new pdfjsLib.TextLayer({
+            textContentSource: textContent,
+            container: tl,
+            viewport: viewport,
         });
+        await textLayerObj.render();
 
         currentPage = num;
         pageInput.value = num;
