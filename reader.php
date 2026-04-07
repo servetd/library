@@ -11,6 +11,13 @@ $extraCss = ['/assets/css/reader.css'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PDF Kutuphanem">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon.php?size=180">
     <title><?= e($pageTitle) ?> - <?= SITE_TITLE ?></title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/web/pdf_viewer.css">
@@ -106,5 +113,13 @@ $extraCss = ['/assets/css/reader.css'];
     </script>
     <script type="module" src="/assets/js/reader.js"></script>
     <script type="module" src="/assets/js/dictionary.js"></script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                .catch(function(err) { console.log('SW:', err); });
+        });
+    }
+    </script>
 </body>
 </html>

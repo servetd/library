@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="<?= SITE_TITLE ?>">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon.php?size=180">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon.php?size=152">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icon.php?size=120">
     <title><?= e($pageTitle ?? SITE_TITLE) ?> - <?= SITE_TITLE ?></title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <?php if (!empty($extraCss)): ?>

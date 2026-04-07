@@ -31,5 +31,13 @@
             <script src="<?= $js ?>" <?= str_ends_with($js, '.mjs') ? 'type="module"' : '' ?>></script>
         <?php endforeach; ?>
     <?php endif; ?>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                .catch(function(err) { console.log('SW:', err); });
+        });
+    }
+    </script>
 </body>
 </html>
