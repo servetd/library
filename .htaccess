@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Deny access to data directory
+RewriteRule ^data/ - [F,L]
+
+# Deny access to pdfs directory (serve through PHP)
+RewriteRule ^pdfs/ - [F,L]
+
+# Deny access to includes directory
+RewriteRule ^includes/ - [F,L]
