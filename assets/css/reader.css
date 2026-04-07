@@ -94,7 +94,12 @@
     display: block;
 }
 
-/* Text layer: base styles from pdf_viewer.css CDN, only override selection color */
+/* Text layer: reset box-sizing for PDF.js (global * reset breaks span widths) */
+.textLayer, .textLayer * {
+    box-sizing: content-box;
+    line-height: initial;
+}
+
 .textLayer ::selection {
     background: rgba(0, 0, 255, 0.3);
 }
