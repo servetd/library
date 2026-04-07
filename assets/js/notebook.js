@@ -56,7 +56,7 @@ function renderWords() {
         const masteredText = w.mastered ? 'Ogrenildi' : 'Ogren';
 
         return `<tr>
-            <td><strong>${escHtml(w.english)}</strong></td>
+            <td><strong>${escHtml(w.english)}</strong> <button class="btn-icon btn-sm" onclick="pronounceWord('${escAttr(w.english)}')" title="Telaffuz" style="font-size:0.8rem;padding:1px 4px;">&#128264;</button></td>
             <td>${escHtml(w.turkish)}</td>
             <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escAttr(w.context || '')}">${escHtml(w.context || '-')}</td>
             <td>${sourceLink}</td>
@@ -115,6 +115,8 @@ function showCard() {
     }
     document.getElementById('flashcard').style.display = '';
     const w = reviewWords[reviewIndex];
+    // Auto-pronounce on card show
+    if ('speechSynthesis' in window) pronounceWord(w.english);
     document.getElementById('card-front').textContent = w.english;
     document.getElementById('card-back').textContent = w.turkish;
     document.getElementById('flashcard').classList.remove('flipped');
@@ -172,6 +174,26 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') prevCard();
     if (e.key === 'Enter') markMastered();
 });
+
+// === Pronunciation (Web Speech API) ===
+
+window.pronounceWord = function(word) {
+    if (!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.85;
+    const voices = speechSynthesis.getVoices();
+    const enVoice = voices.find(v => v.lang.startsWith('en') && v.localService) ||
+                    voices.find(v => v.lang.startsWith('en'));
+    if (enVoice) utterance.voice = enVoice;
+    speechSynthesis.speak(utterance);
+};
+
+if ('speechSynthesis' in window) {
+    speechSynthesis.getVoices();
+    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
 
 // === Helpers ===
 

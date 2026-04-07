@@ -52,7 +52,10 @@ async function lookupWord(word) {
 
         dictResult.innerHTML = `
             <div class="dict-result">
-                <div class="word">${escHtml(data.word)}</div>
+                <div class="word">
+                    ${escHtml(data.word)}
+                    <button class="btn-icon btn-sm pronounce-btn" onclick="pronounceWord('${escAttr(data.word)}')" title="Telaffuz">&#128264;</button>
+                </div>
                 <div class="translation">${escHtml(data.translation)}</div>
                 ${matchesHtml}
                 <button class="btn btn-success btn-sm save-btn" onclick="saveToNotebook('${escAttr(data.word)}', '${escAttr(data.translation)}')">
@@ -137,6 +140,34 @@ window.saveToNotebook = async function(english, turkish) {
         alert('Baglanti hatasi');
     }
 };
+
+// === Pronunciation (Web Speech API) ===
+window.pronounceWord = function(word) {
+    if (!('speechSynthesis' in window)) {
+        alert('Tarayiciniz sesli telaffuzu desteklemiyor.');
+        return;
+    }
+    // Cancel any ongoing speech
+    speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.85;
+
+    // Try to find an English voice
+    const voices = speechSynthesis.getVoices();
+    const enVoice = voices.find(v => v.lang.startsWith('en') && v.localService) ||
+                    voices.find(v => v.lang.startsWith('en'));
+    if (enVoice) utterance.voice = enVoice;
+
+    speechSynthesis.speak(utterance);
+};
+
+// Preload voices (needed for some browsers)
+if ('speechSynthesis' in window) {
+    speechSynthesis.getVoices();
+    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
 
 // Make lookupWord global for recent items
 window.lookupWord = lookupWord;
