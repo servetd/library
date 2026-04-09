@@ -96,20 +96,70 @@
 
 /* Text layer: reset box-sizing for PDF.js (global * reset breaks span widths) */
 .textLayer, .textLayer * {
-    box-sizing: content-box;
-    line-height: initial;
+    box-sizing: content-box !important;
+    margin: initial;
+    padding: initial;
+    line-height: 1;
 }
 
 .textLayer ::selection {
     background: rgba(0, 0, 255, 0.3);
 }
 
-/* === Quote Save Popup === */
-.quote-popup {
-    animation: fadeIn 0.15s ease;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+/* === Selection Action Bar === */
+.selection-bar {
+    display: flex;
+    gap: 0.3rem;
+    padding: 0.4rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 60;
+    animation: selBarIn 0.12s ease;
 }
-@keyframes fadeIn {
+
+.selection-bar .sel-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.65rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text);
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+.selection-bar .sel-btn:hover { background: var(--primary-light); }
+.selection-bar .sel-btn .ico { font-size: 1rem; }
+
+/* Desktop: floating near selection */
+.selection-bar.floating {
+    position: fixed;
+    transform: translateX(-50%);
+}
+
+/* Mobile: fixed bottom bar */
+.selection-bar.bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+    justify-content: center;
+    padding: 0.5rem;
+    border-bottom: none;
+}
+
+@keyframes selBarIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.selection-bar.floating { animation-name: selBarFloatIn; }
+@keyframes selBarFloatIn {
     from { opacity: 0; transform: translateX(-50%) translateY(4px); }
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }

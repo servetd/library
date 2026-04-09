@@ -211,87 +211,177 @@ document.getElementById('close-sidebar').addEventListener('click', () => {
     }
 });
 
-// === Text Selection → Dictionary + Quote Save ===
-document.addEventListener('mouseup', () => {
+// === Selection Action Bar (works on desktop, tablet, mobile) ===
+let selectionBar = null;
+let selectedText = '';
+
+function isInTextLayer(node) {
+    const tl = document.getElementById('text-layer');
+    return tl && node && (tl.contains(node) || tl === node);
+}
+
+function handleSelection() {
     const selection = window.getSelection();
     const text = selection.toString().trim();
-    if (!text || text.length === 0) {
-        hideQuotePopup();
+
+    if (!text) {
+        hideSelectionBar();
         return;
     }
-    // Check if selection is within the text layer
-    const anchor = selection.anchorNode;
-    if (!anchor || !document.getElementById('text-layer')?.contains(anchor)) return;
 
-    if (text.length < 100) {
-        // Short text → dictionary lookup
-        window.dispatchEvent(new CustomEvent('word-selected', { detail: { word: text } }));
-        if (window.innerWidth <= 768) {
-            sidebar.classList.remove('collapsed');
-            sidebar.classList.add('open');
-        }
+    // Check if either end of selection is in text layer
+    if (!isInTextLayer(selection.anchorNode) && !isInTextLayer(selection.focusNode)) {
+        return;
     }
 
-    // Any selection → show quote save popup (for sentences/paragraphs)
-    if (text.length > 10) {
-        showQuotePopup(text, selection);
+    selectedText = text;
+    showSelectionBar(selection);
+}
+
+function showSelectionBar(selection) {
+    hideSelectionBar();
+    const isMobile = window.innerWidth <= 768;
+
+    selectionBar = document.createElement('div');
+    selectionBar.className = 'selection-bar ' + (isMobile ? 'bottom-bar' : 'floating');
+
+    // Build buttons based on selection length
+    let buttons = '';
+
+    // Translate - for short text (words/phrases)
+    if (selectedText.length < 100) {
+        buttons += `<button class="sel-btn" data-action="translate"><span class="ico">&#128269;</span> Cevir</button>`;
     }
-});
 
-// === Quote Save Popup ===
-let quotePopup = null;
+    // Pronounce
+    if (selectedText.length < 60) {
+        buttons += `<button class="sel-btn" data-action="pronounce"><span class="ico">&#128264;</span> Telaffuz</button>`;
+    }
 
-function showQuotePopup(text, selection) {
-    hideQuotePopup();
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
+    // Save Quote - for any text
+    buttons += `<button class="sel-btn" data-action="quote"><span class="ico">&#128221;</span> Alintiyi Kaydet</button>`;
 
-    quotePopup = document.createElement('div');
-    quotePopup.className = 'quote-popup';
-    quotePopup.innerHTML = `<button class="btn btn-sm btn-primary" id="save-quote-btn">&#128221; Alintiyi Kaydet</button>`;
-    quotePopup.style.position = 'fixed';
-    quotePopup.style.left = (rect.left + rect.width / 2) + 'px';
-    quotePopup.style.top = (rect.top - 40) + 'px';
-    quotePopup.style.transform = 'translateX(-50%)';
-    quotePopup.style.zIndex = '60';
-    document.body.appendChild(quotePopup);
+    // Copy
+    buttons += `<button class="sel-btn" data-action="copy"><span class="ico">&#128203;</span> Kopyala</button>`;
 
-    document.getElementById('save-quote-btn').addEventListener('click', async () => {
-        const fileKey = config.category + '/' + config.file;
-        const fileName = config.file;
-        try {
-            const res = await fetch('/api/notes.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    text: text.substring(0, 2000),
-                    source_pdf: fileKey,
-                    source_page: currentPage,
-                    source_name: fileName,
-                }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-                quotePopup.innerHTML = '<span class="btn btn-sm btn-success">Kaydedildi!</span>';
-                setTimeout(hideQuotePopup, 1500);
-            } else {
-                alert(data.error || 'Kaydedilemedi');
-                hideQuotePopup();
-            }
-        } catch {
-            alert('Baglanti hatasi');
-            hideQuotePopup();
+    selectionBar.innerHTML = buttons;
+
+    // Position
+    if (!isMobile) {
+        const range = selection.getRangeAt(0);
+        const rects = range.getClientRects();
+        // Use the first rect (top of selection) for positioning
+        const firstRect = rects.length > 0 ? rects[0] : range.getBoundingClientRect();
+        selectionBar.style.left = (firstRect.left + firstRect.width / 2) + 'px';
+        selectionBar.style.top = Math.max(8, firstRect.top - 48) + 'px';
+    }
+
+    document.body.appendChild(selectionBar);
+
+    // Action handlers
+    selectionBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+
+        switch (action) {
+            case 'translate':
+                window.dispatchEvent(new CustomEvent('word-selected', { detail: { word: selectedText } }));
+                if (isMobile) {
+                    sidebar.classList.remove('collapsed');
+                    sidebar.classList.add('open');
+                }
+                hideSelectionBar();
+                break;
+
+            case 'pronounce':
+                if (window.pronounceWord) window.pronounceWord(selectedText);
+                break;
+
+            case 'quote':
+                saveQuote(btn);
+                break;
+
+            case 'copy':
+                navigator.clipboard.writeText(selectedText).then(() => {
+                    btn.innerHTML = '<span class="ico">&#10003;</span> Kopyalandi';
+                    setTimeout(hideSelectionBar, 1000);
+                });
+                break;
         }
     });
 }
 
-function hideQuotePopup() {
-    if (quotePopup) {
-        quotePopup.remove();
-        quotePopup = null;
+async function saveQuote(btn) {
+    const fileKey = config.category + '/' + config.file;
+    const fileName = config.file;
+    btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;"></span>';
+
+    try {
+        const res = await fetch('/api/notes.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: selectedText.substring(0, 2000),
+                source_pdf: fileKey,
+                source_page: currentPage,
+                source_name: fileName,
+            }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            btn.innerHTML = '<span class="ico">&#10003;</span> Kaydedildi';
+            setTimeout(hideSelectionBar, 1500);
+        } else {
+            btn.innerHTML = '<span class="ico">&#128221;</span> ' + (data.error || 'Hata');
+        }
+    } catch {
+        btn.innerHTML = '<span class="ico">&#128221;</span> Hata';
     }
 }
+
+function hideSelectionBar() {
+    if (selectionBar) {
+        selectionBar.remove();
+        selectionBar = null;
+    }
+}
+
+// Desktop: show on mouseup
+document.addEventListener('mouseup', (e) => {
+    // Don't trigger if clicking inside the selection bar itself
+    if (selectionBar && selectionBar.contains(e.target)) return;
+    // Small delay to let selection finalize
+    setTimeout(handleSelection, 10);
+});
+
+// Mobile/Tablet: show on selectionchange (long-press triggers this)
+let selChangeTimer = null;
+document.addEventListener('selectionchange', () => {
+    clearTimeout(selChangeTimer);
+    selChangeTimer = setTimeout(() => {
+        const selection = window.getSelection();
+        const text = selection.toString().trim();
+        if (text && text.length > 0 && window.innerWidth <= 768) {
+            if (isInTextLayer(selection.anchorNode) || isInTextLayer(selection.focusNode)) {
+                selectedText = text;
+                showSelectionBar(selection);
+            }
+        }
+    }, 400);
+});
+
+// Hide bar when clicking elsewhere
+document.addEventListener('mousedown', (e) => {
+    if (selectionBar && !selectionBar.contains(e.target)) {
+        hideSelectionBar();
+    }
+});
+document.addEventListener('touchstart', (e) => {
+    if (selectionBar && !selectionBar.contains(e.target)) {
+        hideSelectionBar();
+    }
+});
 
 // Export for dictionary.js
 window.readerGetCurrentPage = () => currentPage;
